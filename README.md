@@ -1,101 +1,357 @@
-# DiceGame
+# DiceGame 🎲
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+An online multiplayer dice game built as an **Nx monorepo** with an **Angular 18** frontend, **NestJS 10** backend, **PostgreSQL 16** database, **Redis 7** for caching, and **Socket.IO** for real-time gameplay.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+---
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## Table of Contents
 
-## Run tasks
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Run Tasks](#run-tasks)
+- [Useful Links](#useful-links)
 
-To run the dev server for your app, use:
+---
+
+## Tech Stack
+
+| Layer        | Technology                          |
+| ------------ | ----------------------------------- |
+| Frontend     | Angular 18, SCSS, RxJS              |
+| Backend      | NestJS 10, TypeORM, Socket.IO       |
+| Database     | PostgreSQL 16                       |
+| Cache        | Redis 7                             |
+| Monorepo     | Nx 19.8                             |
+| Language     | TypeScript 5.5                      |
+| Testing      | Jest                                |
+| Linting      | ESLint, Prettier                    |
+| Bundler      | Webpack (API), Angular CLI (Web)    |
+| Containers   | Docker Compose                      |
+
+---
+
+## Project Structure
+
+```
+dice-game/
+├── .editorconfig                        # Editor formatting rules
+├── .gitignore                           # Git ignore rules
+├── .prettierrc                          # Prettier configuration
+├── .prettierignore                      # Prettier ignore rules
+├── docker-compose.yml                   # Docker services (PostgreSQL 16 + Redis 7)
+├── eslint.config.js                     # Root ESLint configuration
+├── jest.config.ts                       # Root Jest configuration
+├── jest.preset.js                       # Jest preset (shared across projects)
+├── nx.json                              # Nx workspace configuration & plugin settings
+├── package.json                         # Root dependencies & workspace metadata
+├── package-lock.json                    # Locked dependency versions
+├── tsconfig.base.json                   # Base TypeScript config (shared paths & options)
+├── README.md                            # This file
+│
+├── apps/
+│   ├── api/
+│   │   ├── api/                                    # ── NestJS Backend Application ──
+│   │   │   ├── .env                                # Environment variables (DATABASE_URL, etc.)
+│   │   │   ├── eslint.config.js                    # API-specific ESLint config
+│   │   │   ├── jest.config.ts                       # API unit test config
+│   │   │   ├── project.json                        # Nx project config (targets, tags)
+│   │   │   ├── tsconfig.json                       # API TypeScript config (references)
+│   │   │   ├── tsconfig.app.json                   # TS config for application build
+│   │   │   ├── tsconfig.spec.json                  # TS config for test files
+│   │   │   ├── webpack.config.js                   # Webpack bundler config for NestJS
+│   │   │   │
+│   │   │   └── src/
+│   │   │       ├── main.ts                         # App bootstrap (dotenv, global prefix /api, port 3000)
+│   │   │       │
+│   │   │       ├── app/
+│   │   │       │   ├── app.module.ts               # Root module (ConfigModule, TypeORM, feature modules)
+│   │   │       │   ├── app.controller.ts           # Root health-check controller
+│   │   │       │   ├── app.controller.spec.ts      # Controller tests
+│   │   │       │   ├── app.service.ts              # Root service
+│   │   │       │   └── app.service.spec.ts         # Service tests
+│   │   │       │
+│   │   │       ├── assets/                         # Static assets (empty)
+│   │   │       │
+│   │   │       ├── common/                         # ── Shared Backend Utilities ──
+│   │   │       │   ├── decorators/                 # Custom decorators
+│   │   │       │   ├── filters/                    # Exception filters
+│   │   │       │   ├── guards/                     # Auth & role guards
+│   │   │       │   └── interceptors/               # Request/response interceptors
+│   │   │       │
+│   │   │       ├── config/                         # ── Configuration Files ──
+│   │   │       │   ├── database.config.ts          # TypeORM async config (PostgreSQL, User entity, migrations)
+│   │   │       │   ├── jwt.config.ts               # JWT authentication config (placeholder)
+│   │   │       │   └── redis.config.ts             # Redis connection config (placeholder)
+│   │   │       │
+│   │   │       ├── migrations/                     # TypeORM database migrations
+│   │   │       │
+│   │   │       └── modules/                        # ── Feature Modules ──
+│   │   │           │
+│   │   │           ├── auth/                       # Authentication module
+│   │   │           │   ├── auth.module.ts           # Module definition
+│   │   │           │   ├── auth.controller.ts      # Routes: GET /auth/status
+│   │   │           │   ├── auth.service.ts         # Auth business logic
+│   │   │           │   ├── dto/                    # Data transfer objects (login, register)
+│   │   │           │   └── strategies/             # Passport strategies (JWT, local)
+│   │   │           │
+│   │   │           ├── game/                       # Game logic module
+│   │   │           │   ├── game.module.ts          # Module definition
+│   │   │           │   ├── game.controller.ts      # Routes: GET /game/status
+│   │   │           │   ├── game.service.ts         # Dice game business logic
+│   │   │           │   └── dto/                    # Game-related DTOs
+│   │   │           │
+│   │   │           ├── gateway/                    # Real-time WebSocket module
+│   │   │           │   ├── gateway.module.ts       # Module definition
+│   │   │           │   └── game.gateway.ts         # Socket.IO gateway for live game events
+│   │   │           │
+│   │   │           ├── leaderboard/                # Leaderboard module
+│   │   │           │   ├── leaderboard.module.ts   # Module definition
+│   │   │           │   ├── leaderboard.controller.ts # Routes: GET /leaderboard/status
+│   │   │           │   └── leaderboard.service.ts  # Leaderboard ranking logic
+│   │   │           │
+│   │   │           └── users/                      # Users module
+│   │   │               ├── user.entity.ts          # TypeORM entity (id, email, password_hash, game_username, avatar_url, stats)
+│   │   │               ├── users.controller.ts     # Routes: GET /users/status
+│   │   │               └── users.service.ts        # User CRUD logic
+│   │   │
+│   │   └── api-e2e/                                # ── API End-to-End Tests ──
+│   │       ├── eslint.config.js                    # E2E ESLint config
+│   │       ├── jest.config.ts                       # E2E Jest config
+│   │       ├── project.json                        # Nx project config
+│   │       ├── tsconfig.json                       # TS config
+│   │       ├── tsconfig.spec.json                  # TS spec config
+│   │       └── src/
+│   │           ├── api-api/
+│   │           │   └── api-api.spec.ts             # E2E test specs for API endpoints
+│   │           └── support/
+│   │               ├── global-setup.ts             # Jest global setup (start server)
+│   │               ├── global-teardown.ts          # Jest global teardown (stop server)
+│   │               └── test-setup.ts               # Per-test setup (Axios defaults)
+│   │
+│   └── web/                                        # ── Angular Frontend Application ──
+│       ├── eslint.config.js                        # Web ESLint config
+│       ├── jest.config.ts                           # Web unit test config
+│       ├── project.json                            # Nx project config
+│       ├── server.ts                               # Angular SSR server entry point
+│       ├── tsconfig.json                           # Web TS config (references)
+│       ├── tsconfig.app.json                       # TS config for app build
+│       ├── tsconfig.editor.json                    # TS config for IDE support
+│       ├── tsconfig.spec.json                      # TS config for tests
+│       │
+│       ├── public/
+│       │   └── favicon.ico                         # Browser tab icon
+│       │
+│       └── src/
+│           ├── index.html                          # HTML entry point
+│           ├── main.ts                             # Client bootstrap
+│           ├── main.server.ts                      # SSR bootstrap
+│           ├── styles.scss                         # Global styles
+│           ├── test-setup.ts                       # Test environment setup
+│           │
+│           └── app/
+│               ├── app.component.ts                # Root component
+│               ├── app.component.html              # Root template
+│               ├── app.component.scss              # Root styles
+│               ├── app.component.spec.ts           # Root component tests
+│               ├── app.config.ts                   # App providers (router, zone)
+│               ├── app.config.server.ts            # SSR-specific providers
+│               ├── app.routes.ts                   # Route definitions
+│               ├── nx-welcome.component.ts         # Nx welcome page (scaffold)
+│               │
+│               ├── core/                           # ── Core Services & Guards ──
+│               │   ├── auth.service.ts             # Client-side auth service
+│               │   ├── auth.service.spec.ts        # Auth service tests
+│               │   ├── auth.guard.ts               # Route guard (canActivate)
+│               │   ├── auth.guard.spec.ts          # Guard tests
+│               │   ├── jwt.interceptor.ts          # HTTP interceptor for JWT tokens
+│               │   └── jwt.interceptor.spec.ts     # Interceptor tests
+│               │
+│               ├── pages/                          # ── Page Components ──
+│               │   ├── auth/
+│               │   │   ├── login/login/            # Login page
+│               │   │   │   ├── login.component.ts
+│               │   │   │   ├── login.component.html
+│               │   │   │   ├── login.component.css
+│               │   │   │   └── login.component.spec.ts
+│               │   │   └── signup/signup/          # Signup page
+│               │   │       ├── signup.component.ts
+│               │   │       ├── signup.component.html
+│               │   │       ├── signup.component.css
+│               │   │       └── signup.component.spec.ts
+│               │   │
+│               │   ├── game/game/                  # Game play page
+│               │   │   ├── game.component.ts
+│               │   │   ├── game.component.html
+│               │   │   ├── game.component.css
+│               │   │   └── game.component.spec.ts
+│               │   │
+│               │   ├── home/home/                  # Landing / home page
+│               │   │   ├── home.component.ts
+│               │   │   ├── home.component.html
+│               │   │   ├── home.component.css
+│               │   │   └── home.component.spec.ts
+│               │   │
+│               │   ├── lobby/lobby/                # Game lobby / matchmaking page
+│               │   │   ├── lobby.component.ts
+│               │   │   ├── lobby.component.html
+│               │   │   ├── lobby.component.css
+│               │   │   └── lobby.component.spec.ts
+│               │   │
+│               │   └── profile/profile/            # User profile page
+│               │       ├── profile.component.ts
+│               │       ├── profile.component.html
+│               │       ├── profile.component.css
+│               │       └── profile.component.spec.ts
+│               │
+│               └── shared/
+│                   └── components/
+│                       └── navbar/navbar/          # Navigation bar component
+│                           ├── navbar.component.ts
+│                           ├── navbar.component.html
+│                           ├── navbar.component.css
+│                           └── navbar.component.spec.ts
+│
+└── libs/
+    └── shared-types/                               # ── Shared Library ──
+        ├── eslint.config.js                        # Lib ESLint config
+        ├── jest.config.ts                           # Lib test config
+        ├── package.json                            # Lib package metadata
+        ├── project.json                            # Nx project config
+        ├── README.md                               # Lib documentation
+        ├── tsconfig.json                           # Lib TS config (references)
+        ├── tsconfig.lib.json                       # TS config for lib build
+        ├── tsconfig.spec.json                      # TS config for tests
+        └── src/
+            ├── index.ts                            # Barrel export
+            └── lib/
+                ├── shared-types.ts                 # Shared interfaces & types (used by both API & Web)
+                └── shared-types.spec.ts            # Type tests
+```
+
+### Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                      Nx Monorepo                        │
+│                                                         │
+│  ┌──────────────┐   WebSocket    ┌───────────────────┐  │
+│  │   Angular    │ ◄────────────► │     NestJS        │  │
+│  │   Frontend   │   HTTP / REST  │     Backend       │  │
+│  │   (web)      │ ──────────────►│     (api)         │  │
+│  └──────────────┘                └────────┬──────────┘  │
+│         │                                 │             │
+│         │          ┌──────────────┐       │             │
+│         └─────────►│ shared-types │◄──────┘             │
+│                    │    (lib)     │                      │
+│                    └──────────────┘                      │
+│                                          │              │
+│                              ┌───────────┴───────────┐  │
+│                              │                       │  │
+│                         ┌────┴─────┐          ┌──────┴┐ │
+│                         │PostgreSQL│          │ Redis │ │
+│                         │  (5432)  │          │(6379) │ │
+│                         └──────────┘          └───────┘ │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Key Directories Explained
+
+| Directory                     | Purpose                                                        |
+| ----------------------------- | -------------------------------------------------------------- |
+| `apps/api/api/`               | NestJS backend — REST API + WebSocket gateway                  |
+| `apps/api/api/src/modules/`   | Feature modules (auth, game, gateway, leaderboard, users)      |
+| `apps/api/api/src/config/`    | Configuration factories (database, JWT, Redis)                 |
+| `apps/api/api/src/common/`    | Shared decorators, filters, guards, and interceptors           |
+| `apps/api/api-e2e/`           | End-to-end tests for the API                                   |
+| `apps/web/`                   | Angular frontend with SSR support                              |
+| `apps/web/src/app/core/`      | Singleton services, guards, and interceptors                   |
+| `apps/web/src/app/pages/`     | Routable page components (home, auth, game, lobby, profile)    |
+| `apps/web/src/app/shared/`    | Reusable UI components (navbar, etc.)                          |
+| `libs/shared-types/`          | Shared TypeScript types & interfaces consumed by API and Web   |
+
+### Database Schema (User Entity)
+
+| Column          | Type          | Constraints               |
+| --------------- | ------------- | ------------------------- |
+| `id`            | UUID          | Primary key, auto-generated |
+| `email`         | VARCHAR       | Unique, not null          |
+| `password_hash` | VARCHAR       | Not null                  |
+| `game_username` | VARCHAR(50)   | Unique, not null          |
+| `avatar_url`    | VARCHAR       | Nullable                  |
+| `total_games`   | INT           | Default: 0                |
+| `total_wins`    | INT           | Default: 0                |
+| `created_at`    | TIMESTAMP     | Auto-generated            |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Node.js** >= 18
+- **npm** >= 9
+- **Docker** & **Docker Compose** (for PostgreSQL & Redis)
+
+### Setup
 
 ```sh
+# Clone the repo
+git clone <repo-url> && cd dice-game
+
+# Install dependencies
+npm install
+
+# Start infrastructure (PostgreSQL + Redis)
+docker compose up -d
+
+# Start the API server (port 3000)
+npx nx serve api
+
+# Start the Angular dev server (port 4200)
 npx nx serve web
 ```
 
-To create a production bundle:
+---
+
+## Run Tasks
 
 ```sh
+# Serve the frontend
+npx nx serve web
+
+# Serve the backend
+npx nx serve api
+
+# Build for production
 npx nx build web
-```
+npx nx build api
 
-To see all available targets to run for a project, run:
+# Run unit tests
+npx nx test web
+npx nx test api
 
-```sh
+# Run e2e tests
+npx nx e2e api-e2e
+
+# Lint
+npx nx lint web
+npx nx lint api
+
+# View project graph
+npx nx graph
+
+# See all targets for a project
 npx nx show project web
-```
-        
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/angular:app demo
+npx nx show project api
 ```
 
-To generate a new library, use:
+---
 
-```sh
-npx nx g @nx/angular:lib mylib
-```
+## Useful Links
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
-```
-
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- [Nx Documentation](https://nx.dev)
+- [Angular Docs](https://angular.dev)
+- [NestJS Docs](https://docs.nestjs.com)
+- [TypeORM Docs](https://typeorm.io)
+- [Socket.IO Docs](https://socket.io/docs)
