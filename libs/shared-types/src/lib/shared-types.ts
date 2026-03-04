@@ -115,7 +115,7 @@ export interface LeaveRoomPayload {
 
 /** Server → Client: full room state broadcast. */
 export interface RoomUpdateEvent {
-  room: RoomState;
+  room: LudoRoomState;
 }
 
 /** Server → Client: a new player just joined the room. */
@@ -146,11 +146,11 @@ export interface RollDicePayload {
   roomId: string;
 }
 
-/** Server → Client: result of a dice roll. */
+/** Server → Client: result of a dice roll (Ludo). */
 export interface DiceRolledEvent {
-  userId:      string;
-  value:       number;   // 1–6
-  newPosition: number;
+  userId:         string;
+  value:          number;          // 1–6
+  moveablePieces: string[];        // pieceIds the player can legally move
 }
 
 /** Server → Client: game has transitioned to in_progress. */
@@ -173,7 +173,7 @@ export interface GameOverEvent {
   rankings:  GameOverRanking[];
 }
 
-// ── Leaderboard ────────────────────────────────────────────────────────────────
+// ── Leaderboard ──────────────────────────────────────────────────────────────────
 
 /** One row returned by GET /api/leaderboard. */
 export interface LeaderboardEntry {
@@ -181,4 +181,66 @@ export interface LeaderboardEntry {
   gameUsername: string;
   totalGames:   number;
   totalWins:    number;
+}
+
+// ── Ludo data models ───────────────────────────────────────────────────────────
+
+export type PlayerColor  = 'red' | 'blue' | 'green' | 'yellow';
+export type PieceStatus  = 'home' | 'active' | 'finished';
+
+/** One of the four pieces belonging to a player. */
+export interface LudoPiece {
+  /** Stable identifier, e.g. 'red-0' .. 'red-3'. */
+  pieceId:  string;
+  userId:   string;
+  color:    PlayerColor;
+  status:   PieceStatus;
+  /** 0 = in home base, 1–57 = on the shared board path, 58 = finished. */
+  position: number;
+}
+
+/** A player seat in a Ludo room. */
+export interface LudoPlayer {
+  userId:         string;
+  gameUsername:   string;
+  avatarUrl?:     string;
+  color:          PlayerColor;
+  pieces:         LudoPiece[];
+  /** Count of pieces that have reached the centre (position 58). */
+  finishedPieces: number;
+}
+
+/** Full Ludo room state — broadcast on every meaningful change. */
+export interface LudoRoomState {
+  roomId:         string;
+  status:         GameStatus;
+  players:        LudoPlayer[];
+  /** userId of the player whose turn it currently is. */
+  currentTurn:    string;
+  /** Last dice value rolled this turn; null before any roll. */
+  diceValue:      number | null;
+  /** True once the current player has rolled but not yet moved. */
+  diceRolled:     boolean;
+  /** pieceIds the current player may legally move after their roll. */
+  moveablePieces: string[];
+  createdAt:      string;
+}
+
+// ── Ludo WebSocket event payloads ────────────────────────────────────────────
+
+/** Client → Server: move a specific piece after a dice roll. */
+export interface MovePiecePayload {
+  roomId:  string;
+  pieceId: string;
+}
+
+/** Server → Client: a piece has moved (or been captured). */
+export interface PieceMovedEvent {
+  userId:            string;
+  pieceId:           string;
+  fromPosition:      number;
+  toPosition:        number;
+  /** True when the move landed on an opponent and sent their piece home. */
+  captured:          boolean;
+  capturedPieceId?:  string;
 }

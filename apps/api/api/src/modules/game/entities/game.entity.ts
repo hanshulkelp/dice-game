@@ -35,6 +35,21 @@ export class Game {
   @Column({ nullable: true, type: 'varchar', length: 36, name: 'current_turn' })
   current_turn: string | null;
 
+  /** Last dice value rolled this turn (null when waiting for a roll). */
+  @Column({ nullable: true, type: 'int', name: 'dice_value' })
+  dice_value: number | null;
+
+  /** True once the current player has rolled but not yet moved a piece. */
+  @Column({ type: 'boolean', default: false, name: 'dice_rolled' })
+  dice_rolled: boolean;
+
+  /**
+   * JSON-serialised array of pieceIds the current player may legally move.
+   * Stored as TEXT so no extra migration type is needed.
+   */
+  @Column({ type: 'text', nullable: true, name: 'moveable_pieces' })
+  moveable_pieces: string | null;
+
   @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'winner_id' })
   winner: User | null;

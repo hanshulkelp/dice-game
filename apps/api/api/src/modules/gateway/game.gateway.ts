@@ -14,12 +14,15 @@ import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import jwtConfig from '../../config/jwt.config';
 import { GameService } from '../game/game.service';
+import { LudoLogicService } from '../game/ludo-logic.service';
 import {
   JoinRoomPayload,
   LeaveRoomPayload,
   JwtPayload,
   StartGamePayload,
   RollDicePayload,
+  MovePiecePayload,
+  GameStatus,
 } from '@dice-game/shared-types';
 
 
@@ -41,6 +44,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(
     private readonly gameService: GameService,
+    private readonly ludoLogicService: LudoLogicService,
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtCfg: ConfigType<typeof jwtConfig>,
@@ -186,30 +190,183 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     const { roomId } = payload;
-
-    // Verify the socket is actually in this room
     if (!client.rooms.has(roomId)) {
       client.emit('error', { message: 'Not in this room' });
       return;
     }
 
     try {
-      const { diceResult, gameOver } = await this.gameService.rollDice(auth.userId, roomId);
+      // ── Load & validate ──────────────────────────────────────────────────
+      const room = await this.gameService.getRoomState(roomId);
 
-      // Always broadcast the dice roll result to everyone in the room
-      this.server.to(roomId).emit('dice_rolled', diceResult);
-
-      if (gameOver) {
-        // Broadcast game over — no more rolls will be accepted
-        this.server.to(roomId).emit('game_over', gameOver);
-        // Final room_update with status=finished
-        await this.broadcastRoomUpdate(roomId);
-      } else {
-        // Broadcast updated room state (new position + new currentTurn)
-        await this.broadcastRoomUpdate(roomId);
+      if (room.status !== GameStatus.InProgress) {
+        client.emit('error', { message: 'Game is not in progress' });
+        return;
       }
+      if (room.currentTurn !== auth.userId) {
+        client.emit('error', { message: 'Not your turn' });
+        return;
+      }
+      if (room.diceRolled) {
+        client.emit('error', { message: 'Already rolled this turn' });
+        return;
+      }
+
+      // ── Roll ─────────────────────────────────────────────────────────────
+      const diceValue = Math.ceil(Math.random() * 6);
+      const currentPlayer = room.players.find((p) => p.userId === auth.userId)!;
+      const moveablePieces = this.ludoLogicService.getMoveablePieces(currentPlayer, diceValue);
+
+      const gameId = await this.gameService.getGameId(roomId);
+
+      if (moveablePieces.length === 0) {
+        // No valid moves — auto-rotate turn
+        const nextTurn = await this.gameService.nextTurn(gameId, auth.userId, diceValue);
+        await this.gameService.saveDiceState(gameId, {
+          diceValue,
+          diceRolled: false,
+          moveablePieces: [],
+          currentTurn: nextTurn,
+        });
+        this.server.to(roomId).emit('dice_rolled', { userId: auth.userId, value: diceValue, moveablePieces: [] });
+        await this.broadcastRoomUpdate(roomId);
+        return;
+      }
+
+      await this.gameService.saveDiceState(gameId, {
+        diceValue,
+        diceRolled: true,
+        moveablePieces,
+      });
+      this.server.to(roomId).emit('dice_rolled', { userId: auth.userId, value: diceValue, moveablePieces });
+      await this.broadcastRoomUpdate(roomId);
+
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Roll failed';
+      client.emit('error', { message });
+    }
+  }
+
+  // ── move_piece ───────────────────────────────────────────────────────────────
+  @SubscribeMessage('move_piece')
+  async onMovePiece(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: MovePiecePayload,
+  ) {
+    const auth = client as AuthenticatedSocket;
+    if (!auth.userId) {
+      client.emit('error', { message: 'Unauthorized' });
+      return;
+    }
+
+    const { roomId, pieceId } = payload;
+    if (!client.rooms.has(roomId)) {
+      client.emit('error', { message: 'Not in this room' });
+      return;
+    }
+
+    try {
+      // ── Load & validate ──────────────────────────────────────────────────
+      const room = await this.gameService.getRoomState(roomId);
+
+      if (room.status === GameStatus.Finished) {
+        client.emit('error', { message: 'Game is already finished' });
+        return;
+      }
+      if (!room.diceRolled) {
+        client.emit('error', { message: 'Must roll dice before moving' });
+        return;
+      }
+      if (!room.moveablePieces.includes(pieceId)) {
+        client.emit('error', { message: 'Piece cannot be moved' });
+        return;
+      }
+
+      const currentPlayer = room.players.find((p) => p.userId === auth.userId);
+      if (!currentPlayer) {
+        client.emit('error', { message: 'You are not in this game' });
+        return;
+      }
+      if (room.currentTurn !== auth.userId) {
+        client.emit('error', { message: 'Not your turn' });
+        return;
+      }
+
+      const piece = currentPlayer.pieces.find((p) => p.pieceId === pieceId);
+      if (!piece) {
+        client.emit('error', { message: 'Piece not found' });
+        return;
+      }
+
+      const diceValue = room.diceValue!;
+      const fromPosition = piece.position;
+
+      // ── Compute new state ─────────────────────────────────────────────────
+      const newPosition  = this.ludoLogicService.getNewPosition(piece, diceValue);
+      const newStatus    = newPosition === 58 ? 'finished' : piece.status === 'home' ? 'active' : piece.status;
+
+      const gameId = await this.gameService.getGameId(roomId);
+
+      // ── Persist piece ─────────────────────────────────────────────────────
+      await this.gameService.updatePiece(pieceId, newPosition, newStatus);
+
+      // ── Capture ───────────────────────────────────────────────────────────
+      const captured = this.ludoLogicService.findCapturedPiece(newPosition, auth.userId, room.players);
+      if (captured) {
+        await this.gameService.resetPiece(captured.pieceId);
+      }
+
+      // ── Reload player state to check win ──────────────────────────────────
+      const updatedRoom   = await this.gameService.getRoomState(roomId);
+      const updatedPlayer = updatedRoom.players.find((p) => p.userId === auth.userId)!;
+      const won           = this.ludoLogicService.checkWinCondition(updatedPlayer);
+
+      if (won) {
+        await this.gameService.finalizeGame(gameId, auth.userId);
+        this.server.to(roomId).emit('piece_moved', {
+          userId: auth.userId,
+          pieceId,
+          fromPosition,
+          toPosition: newPosition,
+          captured: !!captured,
+          ...(captured ? { capturedPieceId: captured.pieceId } : {}),
+        });
+        const finalRoom = await this.gameService.getRoomState(roomId);
+        this.server.to(roomId).emit('game_over', {
+          winnerId:  auth.userId,
+          rankings:  finalRoom.players.map((p, i) => ({
+            userId:       p.userId,
+            gameUsername: p.gameUsername,
+            rank:         i + 1,
+            position:     p.finishedPieces,
+          })),
+        });
+        this.server.to(roomId).emit('room_update', { room: finalRoom });
+        return;
+      }
+
+      // ── Rotate turn (stay if rolled 6) ────────────────────────────────────
+      const nextTurn = await this.gameService.nextTurn(gameId, auth.userId, diceValue);
+      await this.gameService.saveDiceState(gameId, {
+        diceValue:      null,
+        diceRolled:     false,
+        moveablePieces: [],
+        currentTurn:    nextTurn,
+      });
+
+      // ── Broadcast ────────────────────────────────────────────────────────
+      this.server.to(roomId).emit('piece_moved', {
+        userId: auth.userId,
+        pieceId,
+        fromPosition,
+        toPosition: newPosition,
+        captured: !!captured,
+        ...(captured ? { capturedPieceId: captured.pieceId } : {}),
+      });
+      await this.broadcastRoomUpdate(roomId);
+
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Move failed';
       client.emit('error', { message });
     }
   }

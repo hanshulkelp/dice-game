@@ -16,8 +16,8 @@ import { AuthService } from '../../../core/auth.service';
 import { GameSocketService } from '../../../core/game-socket.service';
 import {
   JoinCreateGameResponse,
-  RoomPlayer,
-  RoomState,
+  LudoPlayer,
+  LudoRoomState,
 } from '@dice-game/shared-types';
 
 const API = 'http://localhost:3000/api';
@@ -197,12 +197,12 @@ export class LobbyComponent implements OnDestroy {
     this.subs.push(roomSub, errSub);
   }
 
-  private _applyRoomState(room: RoomState) {
+  private _applyRoomState(room: LudoRoomState) {
     const myId = this.auth.currentUser()?.id;
 
     // Build 4 slots (fill from actual players, pad empties)
     const slots: QueuePlayer[] = Array.from({ length: 4 }, (_, i) => {
-      const p: RoomPlayer | undefined = room.players[i];
+      const p: LudoPlayer | undefined = room.players[i];
       if (!p) return { name: '', avatar: '', joined: false };
       return {
         name:   p.gameUsername,
