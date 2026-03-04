@@ -5,21 +5,34 @@
   "projectType": "application",
   "tags": [],
   "targets": {
-    "serve": {
-      "executor": "@nx/js:node",
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "development",
-      "dependsOn": ["build"],
       "options": {
-        "buildTarget": "api-api:build",
-        "runBuildTargetDependencies": false
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/api/api",
+        "main": "apps/api/api/src/main.ts",
+        "tsConfig": "apps/api/api/tsconfig.app.json",
+        "webpackConfig": "apps/api/api/webpack.config.js",
+        "generatePackageJson": true
       },
       "configurations": {
         "development": {
-          "buildTarget": "api-api:build:development"
+          "mode": "development"
         },
         "production": {
-          "buildTarget": "api-api:build:production"
+          "mode": "production",
+          "optimization": false
         }
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "TS_NODE_PROJECT=apps/api/api/tsconfig.app.json npx ts-node -r tsconfig-paths/register apps/api/api/src/main.ts",
+        "cwd": "{workspaceRoot}"
       }
     },
     "test": {

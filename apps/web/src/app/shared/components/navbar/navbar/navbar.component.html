@@ -1,1 +1,43 @@
-<p>navbar works!</p>
+<nav class="navbar">
+  <div class="navbar-container">
+    <!-- Logo -->
+    <a class="logo" routerLink="/">
+      <svg class="logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="36" height="36" rx="6" fill="#e8c547" stroke="#e8c547" stroke-width="1"/>
+        <circle cx="12" cy="12" r="3" fill="#1a1230"/>
+        <circle cx="28" cy="12" r="3" fill="#1a1230"/>
+        <circle cx="12" cy="28" r="3" fill="#1a1230"/>
+        <circle cx="28" cy="28" r="3" fill="#1a1230"/>
+        <circle cx="20" cy="20" r="3" fill="#1a1230"/>
+      </svg>
+      <span class="logo-text">RollRush</span>
+    </a>
+
+    <!-- Nav Links -->
+    <ul class="nav-links">
+      <li><a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Home</a></li>
+      @if (auth.isLoggedIn()) {
+        <li><a routerLink="/lobby" routerLinkActive="active">Lobby</a></li>
+      }
+      <li><a routerLink="/leaderboard" routerLinkActive="active">Leaderboard</a></li>
+    </ul>
+
+    <!-- Auth -->
+    <div class="nav-auth">
+      @if (auth.isLoggedIn()) {
+        <a routerLink="/profile" class="avatar-btn" title="My Profile">
+          <svg class="avatar-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="18" cy="18" r="18" fill="#e8c547"/>
+            <circle cx="18" cy="14" r="6" fill="#1a1230"/>
+            <path d="M6 30c0-6.627 5.373-10 12-10s12 3.373 12 10" fill="#1a1230"/>
+          </svg>
+          @if (auth.username()) {
+            <span class="avatar-name">{{ auth.username() }}</span>
+          }
+        </a>
+      } @else {
+        <a routerLink="/auth/login" class="btn-login">Login</a>
+      }
+    </div>
+  </div>
+</nav>

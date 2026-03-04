@@ -1,1 +1,204 @@
-<p>profile works!</p>
+<div class="profile-page">
+
+  <!-- ── Profile Header ─────────────────────────────────────── -->
+  <div class="profile-header">
+    <div class="header-left">
+      <div class="avatar-wrap">
+        @if (user()?.avatar_url) {
+          <img [src]="user()!.avatar_url" class="avatar-img" alt="avatar" />
+        } @else {
+          <div class="avatar-fallback">
+            <svg viewBox="0 0 80 80" fill="none">
+              <circle cx="40" cy="40" r="40" fill="#2a2040"/>
+              <circle cx="40" cy="32" r="14" fill="#e8c547"/>
+              <path d="M10 72c0-16.569 13.431-24 30-24s30 7.431 30 24" fill="#e8c547"/>
+            </svg>
+          </div>
+        }
+        <span class="camera-btn" title="Change avatar">📷</span>
+      </div>
+
+      <div class="header-info">
+        <div class="username-row">
+          <h1>{{ user()?.game_username ?? 'Player' }}</h1>
+          <span class="verified">✔</span>
+        </div>
+        <p class="email">{{ user()?.email }}</p>
+        <div class="stats-pills">
+          <span class="pill">GAMES <strong>{{ user()?.total_games ?? 0 | number }}</strong></span>
+          <span class="pill">WINS <strong>{{ user()?.total_wins ?? 0 | number }}</strong></span>
+          <span class="pill win-rate">WIN RATE <strong>{{ winRate() }}%</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-edit" (click)="toggle('username')">
+        <span>✏️</span> Edit Profile
+      </button>
+      <button class="btn-logout" (click)="auth.logout()">
+        <span>🔓</span> Logout
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Two-column body ────────────────────────────────────── -->
+  <div class="profile-body">
+
+    <!-- Left: Player Statistics -->
+    <section class="stats-section">
+      <h2 class="section-title"><span class="icon">📊</span> Player Statistics</h2>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <p class="stat-label">🎮 TOTAL GAMES</p>
+          <p class="stat-value">{{ user()?.total_games ?? 0 | number }}</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">🏆 WINS</p>
+          <p class="stat-value">{{ user()?.total_wins ?? 0 | number }}</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">🎯 WIN RATE</p>
+          <p class="stat-value">{{ winRate() }}%</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">⚡ STREAK</p>
+          <p class="stat-value">W7</p>
+        </div>
+      </div>
+
+      <div class="recent-games">
+        <p class="recent-label">RECENT GAMES</p>
+        @for (game of recentGames; track game.name) {
+          <div class="game-row">
+            <span class="result-badge" [class.win]="game.result === 'WIN'" [class.loss]="game.result === 'LOSS'">{{ game.result }}</span>
+            <div class="game-info">
+              <span class="game-name">{{ game.name }}</span>
+              <span class="game-time">{{ game.time }}</span>
+            </div>
+            <span class="game-rank">Rank <strong>{{ game.rank }}</strong></span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Right: Account Settings -->
+    <section class="settings-section">
+      <h2 class="section-title"><span class="icon">⚙️</span> Account Settings</h2>
+
+      <!-- Change Username -->
+      <div class="accordion-item" [class.open]="openPanel() === 'username'">
+        <button class="accordion-header" (click)="toggle('username')">
+          <div class="acc-left">
+            <span class="acc-icon">👤</span>
+            <div>
+              <p class="acc-title">Change Username</p>
+              <p class="acc-sub">Update your in-game identity</p>
+            </div>
+          </div>
+          <span class="chevron">{{ openPanel() === 'username' ? '∧' : '›' }}</span>
+        </button>
+        @if (openPanel() === 'username') {
+          <div class="accordion-body">
+            <form [formGroup]="usernameForm" (ngSubmit)="saveUsername()">
+              <label class="field-label">NEW USERNAME</label>
+              <input formControlName="game_username" class="field-input" placeholder="Enter new username" />
+              @if (usernameError()) {
+                <p class="field-error">{{ usernameError() }}</p>
+              }
+              @if (usernameSuccess()) {
+                <p class="field-success">Username updated!</p>
+              }
+              <button type="submit" class="btn-save" [disabled]="usernameForm.invalid || usernameLoading()">
+                {{ usernameLoading() ? 'Saving…' : 'Save Username' }}
+              </button>
+            </form>
+          </div>
+        }
+      </div>
+
+      <!-- Security & Password -->
+      <div class="accordion-item" [class.open]="openPanel() === 'password'">
+        <button class="accordion-header" (click)="toggle('password')">
+          <div class="acc-left">
+            <span class="acc-icon">🔒</span>
+            <div>
+              <p class="acc-title">Security &amp; Password</p>
+              <p class="acc-sub">Secure your account with a strong password</p>
+            </div>
+          </div>
+          <span class="chevron">{{ openPanel() === 'password' ? '∧' : '›' }}</span>
+        </button>
+        @if (openPanel() === 'password') {
+          <div class="accordion-body">
+            <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()">
+              <label class="field-label">CURRENT PASSWORD</label>
+              <div class="input-wrap">
+                <input formControlName="currentPassword" [type]="showCurrent() ? 'text' : 'password'" class="field-input" placeholder="••••••••" />
+                <button type="button" class="eye-btn" (click)="showCurrent.set(!showCurrent())">{{ showCurrent() ? '🙈' : '👁' }}</button>
+              </div>
+
+              <div class="pw-row">
+                <div class="pw-half">
+                  <label class="field-label">NEW PASSWORD</label>
+                  <div class="input-wrap">
+                    <input formControlName="newPassword" [type]="showNew() ? 'text' : 'password'" class="field-input" placeholder="Min. 8 chars" />
+                    <button type="button" class="eye-btn" (click)="showNew.set(!showNew())">{{ showNew() ? '🙈' : '👁' }}</button>
+                  </div>
+                  @if (passwordStrength()) {
+                    <p class="strength" [class.weak]="passwordStrength() === 'Weak'" [class.fair]="passwordStrength() === 'Fair'" [class.strong]="passwordStrength() === 'Strong' || passwordStrength() === 'Very Strong'">
+                      Password strength: {{ passwordStrength() }}
+                    </p>
+                  }
+                </div>
+                <div class="pw-half">
+                  <label class="field-label">CONFIRM NEW PASSWORD</label>
+                  <div class="input-wrap">
+                    <input formControlName="confirmPassword" [type]="showConfirm() ? 'text' : 'password'" class="field-input" placeholder="Match new password" />
+                    <button type="button" class="eye-btn" (click)="showConfirm.set(!showConfirm())">{{ showConfirm() ? '🙈' : '👁' }}</button>
+                  </div>
+                  @if (passwordForm.hasError('mismatch') && passwordForm.get('confirmPassword')?.dirty) {
+                    <p class="field-error">Passwords do not match</p>
+                  }
+                </div>
+              </div>
+
+              @if (passwordSuccess()) {
+                <p class="field-success">Password updated!</p>
+              }
+              <button type="submit" class="btn-update-pw" [disabled]="passwordForm.invalid">
+                Update Password
+              </button>
+            </form>
+          </div>
+        }
+      </div>
+
+      <!-- Avatar Customization -->
+      <div class="accordion-item" [class.open]="openPanel() === 'avatar'">
+        <button class="accordion-header" (click)="toggle('avatar')">
+          <div class="acc-left">
+            <span class="acc-icon">🎨</span>
+            <div>
+              <p class="acc-title">Avatar Customization</p>
+              <p class="acc-sub">Change your profile picture and frame</p>
+            </div>
+          </div>
+          <span class="chevron">{{ openPanel() === 'avatar' ? '∧' : '›' }}</span>
+        </button>
+        @if (openPanel() === 'avatar') {
+          <div class="accordion-body">
+            <label class="field-label">AVATAR URL</label>
+            <input class="field-input" placeholder="https://..." />
+            <button class="btn-save" style="margin-top:12px">Save Avatar</button>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+
+  <footer class="profile-footer">
+    © 2024 RollRush Multiplayer Dice Board. All rights reserved.
+  </footer>
+</div>
