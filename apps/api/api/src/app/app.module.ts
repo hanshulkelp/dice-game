@@ -11,6 +11,7 @@ import { AuthModule } from '../modules/auth/auth.module';
 import { UsersModule } from '../modules/users/users.module';
 import { GameModule } from '../modules/game/game.module';
 import { GatewayModule } from '../modules/gateway/gateway.module';
+import { LeaderboardModule } from '../modules/leaderboard/leaderboard.module';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { GatewayModule } from '../modules/gateway/gateway.module';
     UsersModule,
     GameModule,
     GatewayModule,
-    // LeaderboardModule,
+    LeaderboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

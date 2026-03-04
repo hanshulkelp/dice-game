@@ -31,6 +31,10 @@ export class Game {
   @Column({ nullable: true, type: 'uuid' })
   winner_id: string | null;
 
+  /** UUID of the player whose turn it is (null when game not started). */
+  @Column({ nullable: true, type: 'varchar', length: 36, name: 'current_turn' })
+  current_turn: string | null;
+
   @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'winner_id' })
   winner: User | null;

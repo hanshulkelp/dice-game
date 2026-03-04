@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  Index,
 } from 'typeorm';
 
 @Entity('users')
@@ -25,6 +26,7 @@ export class User {
   @Column({ default: 0 })
   total_games: number;
 
+  @Index('IDX_users_total_wins')
   @Column({ default: 0 })
   total_wins: number;
 

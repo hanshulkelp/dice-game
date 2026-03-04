@@ -86,12 +86,13 @@ export interface RoomPlayer {
 
 /** Full room state returned by GET /api/game/:roomId. */
 export interface RoomState {
-  gameId:    string;
-  roomId:    string;
-  status:    GameStatus;
-  players:   RoomPlayer[];
-  winnerId:  string | null;
-  createdAt: string;
+  gameId:       string;
+  roomId:       string;
+  status:       GameStatus;
+  players:      RoomPlayer[];
+  winnerId:     string | null;
+  currentTurn:  string | null;   // userId whose turn it is
+  createdAt:    string;
 }
 
 /** Response body for POST /api/game/create and POST /api/game/join. */
@@ -133,4 +134,51 @@ export interface PlayerLeftEvent {
 export interface WsErrorEvent {
   message: string;
   code?:   string;
+}
+
+/** Client → Server: start a waiting room (transitions to in_progress). */
+export interface StartGamePayload {
+  roomId: string;
+}
+
+/** Client → Server: roll the dice on the current turn. */
+export interface RollDicePayload {
+  roomId: string;
+}
+
+/** Server → Client: result of a dice roll. */
+export interface DiceRolledEvent {
+  userId:      string;
+  value:       number;   // 1–6
+  newPosition: number;
+}
+
+/** Server → Client: game has transitioned to in_progress. */
+export interface GameStartedEvent {
+  roomId:      string;
+  currentTurn: string;   // userId of the first player
+}
+
+/** One entry in the final rankings list. */
+export interface GameOverRanking {
+  userId:       string;
+  gameUsername: string;
+  rank:         number;
+  position:     number;
+}
+
+/** Server → Client: game has finished, sent once after the winning roll. */
+export interface GameOverEvent {
+  winnerId:  string;
+  rankings:  GameOverRanking[];
+}
+
+// ── Leaderboard ────────────────────────────────────────────────────────────────
+
+/** One row returned by GET /api/leaderboard. */
+export interface LeaderboardEntry {
+  rank:         number;
+  gameUsername: string;
+  totalGames:   number;
+  totalWins:    number;
 }

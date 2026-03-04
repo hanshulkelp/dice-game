@@ -22,6 +22,7 @@ import {
   RollDicePayload,
 } from '@dice-game/shared-types';
 
+
 interface AuthenticatedSocket extends Socket {
   userId: string;
   gameUsername: string;
@@ -122,6 +123,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const auth = client as AuthenticatedSocket;
     const { roomId } = payload;
 
+    // Verify the socket is actually in this room
+    if (!client.rooms.has(roomId)) {
+      client.emit('error', { message: 'Not in this room' });
+      return;
+    }
+
     client.leave(roomId);
 
     this.server.to(roomId).emit('player_left', {
@@ -144,6 +151,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     const { roomId } = payload;
+
+    // Verify the socket is actually in this room
+    if (!client.rooms.has(roomId)) {
+      client.emit('error', { message: 'Not in this room' });
+      return;
+    }
+
     try {
       const room = await this.gameService.startGame(auth.userId, roomId);
 
@@ -172,14 +186,28 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     const { roomId } = payload;
+
+    // Verify the socket is actually in this room
+    if (!client.rooms.has(roomId)) {
+      client.emit('error', { message: 'Not in this room' });
+      return;
+    }
+
     try {
-      const result = await this.gameService.rollDice(auth.userId, roomId);
+      const { diceResult, gameOver } = await this.gameService.rollDice(auth.userId, roomId);
 
-      // Broadcast the dice roll result to everyone in the room
-      this.server.to(roomId).emit('dice_rolled', result);
+      // Always broadcast the dice roll result to everyone in the room
+      this.server.to(roomId).emit('dice_rolled', diceResult);
 
-      // Broadcast updated room state (new position + new currentTurn)
-      await this.broadcastRoomUpdate(roomId);
+      if (gameOver) {
+        // Broadcast game over — no more rolls will be accepted
+        this.server.to(roomId).emit('game_over', gameOver);
+        // Final room_update with status=finished
+        await this.broadcastRoomUpdate(roomId);
+      } else {
+        // Broadcast updated room state (new position + new currentTurn)
+        await this.broadcastRoomUpdate(roomId);
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Roll failed';
       client.emit('error', { message });
