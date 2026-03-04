@@ -1,0 +1,233 @@
+<div class="lobby-page">
+
+  <!-- ── Page title ─────────────────────────────────────────────────────── -->
+  <div class="lobby-hero">
+    <h1>Game <span class="accent">Lobby</span></h1>
+    <div class="underline"></div>
+    <p class="subtitle">Start your dice adventure or join a friend in the mystical arena.</p>
+  </div>
+
+  <!-- ── Two-column card area ───────────────────────────────────────────── -->
+  <div class="lobby-cards">
+
+    <!-- Create a Room -->
+    <div class="card card-create">
+      <div class="card-header">
+        <div class="card-icon">⊞</div>
+        <div>
+          <p class="card-title">Create a Room</p>
+          <p class="card-sub">Host a new game</p>
+        </div>
+        <div class="room-id-badge">
+          <span class="id-label">ID:</span>
+          <span class="id-val">{{ roomId() }}</span>
+          <button class="icon-btn" title="Regenerate ID" (click)="refreshRoomId()">🔄</button>
+        </div>
+      </div>
+
+      <!-- Lobby preview -->
+      <div class="lobby-preview">
+        <div class="preview-header">
+          <span class="preview-label">LOBBY PREVIEW</span>
+          <span class="preview-count">1/4 Players</span>
+        </div>
+        <div class="slots-grid">
+          @for (slot of slots(); track slot.label) {
+            <div class="slot" [class.occupied]="slot.occupied">
+              @if (slot.occupied) {
+                <div class="slot-avatar">🧑‍💼</div>
+                <span class="slot-name">{{ slot.label }}</span>
+                @if (slot.isHost) { <span class="host-badge">HOST</span> }
+              } @else {
+                <span class="slot-plus">+</span>
+                <span class="slot-name waiting">{{ slot.label }}</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Password -->
+      <p class="field-label">Set Room Password</p>
+      <div class="input-wrap" [formGroup]="createForm">
+        <span class="input-icon">🔒</span>
+        <input
+          formControlName="password"
+          [type]="showCreatePw() ? 'text' : 'password'"
+          class="field-input"
+          placeholder="Optional password"
+        />
+        <button type="button" class="eye-btn" (click)="showCreatePw.set(!showCreatePw())">
+          {{ showCreatePw() ? '🙈' : '👁' }}
+        </button>
+      </div>
+      <p class="hint">Optional — leave blank for an open room.</p>
+
+      @if (createError()) {
+        <p class="field-error">{{ createError() }}</p>
+      }
+
+      <button class="btn-create" (click)="createRoom()" [disabled]="creating()">
+        {{ creating() ? 'Creating...' : 'Create Room' }}
+      </button>
+    </div>
+
+    <!-- Join a Room -->
+    <div class="card card-join">
+      <div class="card-header">
+        <div class="card-icon join">🚪</div>
+        <div>
+          <p class="card-title">Join a Room</p>
+          <p class="card-sub">Enter a game ID to play</p>
+        </div>
+      </div>
+
+      <form [formGroup]="joinForm" (ngSubmit)="joinRoom()">
+        <p class="field-label">Game ID</p>
+        <div class="input-wrap">
+          <span class="input-icon">🎲</span>
+          <input formControlName="gameId" class="field-input" placeholder="e.g. XJ7-R09" />
+        </div>
+
+        <p class="field-label">Room Password</p>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input
+            formControlName="password"
+            [type]="showJoinPw() ? 'text' : 'password'"
+            class="field-input"
+            placeholder="Enter Room Password..."
+          />
+          <button type="button" class="eye-btn" (click)="showJoinPw.set(!showJoinPw())">
+            {{ showJoinPw() ? '🙈' : '👁' }}
+          </button>
+        </div>
+
+        @if (joinError()) {
+          <p class="field-error">{{ joinError() }}</p>
+        }
+
+        <p class="browse-hint">
+          Or browse the <span class="active-link">active rooms</span> list below to find an open game.
+        </p>
+
+        <button type="submit" class="btn-join" [disabled]="joining()">
+          {{ joining() ? 'Joining...' : 'Join Room' }}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Active Rooms ──────────────────────────────────────────────────── -->
+  <div class="active-section">
+    <div class="active-header">
+      <span class="pulse-dot"></span>
+      <h2>Active Rooms</h2>
+      <button class="view-all">View All</button>
+    </div>
+
+    <div class="rooms-grid">
+      @for (room of activeRooms; track room.id) {
+        <div class="room-card">
+          <div class="room-top">
+            <span class="room-id">{{ room.id }}</span>
+            <span class="room-count">👥 {{ room.players }}/{{ room.maxPlayers }}</span>
+          </div>
+          <div class="room-bottom">
+            <div class="room-avatars">
+              @for (av of room.avatars; track av) {
+                <span class="room-avatar">{{ av }}</span>
+              }
+            </div>
+            <button class="btn-room-join" (click)="joinActiveRoom(room)" [disabled]="joining()">Join</button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <footer class="lobby-footer">© 2024 RollRush. All rights reserved.</footer>
+
+  <!-- ── Queue Popup ──────────────────────────────────────────────────── -->
+  @if (showQueueModal()) {
+    <div class="queue-overlay" (click)="leaveQueue()">
+      <div class="queue-modal" (click)="$event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="qm-header">
+          <div class="qm-radar">
+            <span class="radar-ring r1"></span>
+            <span class="radar-ring r2"></span>
+            <span class="radar-ring r3"></span>
+            <span class="radar-dot"></span>
+          </div>
+          <div class="qm-title-group">
+            <h2 class="qm-title">
+              @if (canStartGame()) { Ready to Start! }
+              @else { Finding Players... }
+            </h2>
+            <p class="qm-sub">Room&nbsp;<span class="qm-room-id">#{{ queueRoomId() }}</span></p>
+          </div>
+          <button class="qm-close" (click)="leaveQueue()" title="Leave queue">✕</button>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="qm-progress-track">
+          <div
+            class="qm-progress-fill"
+            [style.width.%]="(queuePlayers().filter(p => p.joined).length / 4) * 100"
+          ></div>
+        </div>
+        <p class="qm-player-count">
+          {{ queuePlayers().filter(p => p.joined).length }} / 4 players
+        </p>
+
+        <!-- Player slots -->
+        <div class="qm-slots">
+          @for (player of queuePlayers(); track $index) {
+            <div class="qm-slot" [class.joined]="player.joined" [class.you]="player.isYou">
+              @if (player.joined) {
+                <img class="qm-avatar" [src]="player.avatar" [alt]="player.name" />
+                <span class="qm-name">{{ player.name }}</span>
+                @if (player.isYou) { <span class="qm-you-tag">YOU</span> }
+                <span class="qm-joined-dot"></span>
+              } @else {
+                <div class="qm-avatar-empty">
+                  <span class="qm-pulse-ring"></span>
+                  <span class="qm-plus">?</span>
+                </div>
+                <span class="qm-name waiting">Searching...</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Status -->
+        <div class="qm-status-area">
+          @if (canStartGame()) {
+            <p class="qm-status-text ready">✅ {{ queuePlayers().filter(p => p.joined).length }} player(s) ready — you can start now or wait for more!</p>
+          } @else {
+            <div class="qm-spinner">
+              <div class="spin-ring"></div>
+            </div>
+            <p class="qm-status-text">
+              Waiting for 1 more player to join...
+            </p>
+          }
+        </div>
+
+        <!-- Actions -->
+        <div class="qm-actions">
+          <button class="qm-btn-leave" (click)="leaveQueue()">Leave Queue</button>
+          @if (canStartGame()) {
+            <button class="qm-btn-ready" (click)="startGame()">
+              Start Game ({{ queuePlayers().filter(p => p.joined).length }}/4)
+            </button>
+          }
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>

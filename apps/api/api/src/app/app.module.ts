@@ -9,6 +9,8 @@ import { databaseConfig } from '../config/database.config';
 import jwtConfig from '../config/jwt.config';
 import { AuthModule } from '../modules/auth/auth.module';
 import { UsersModule } from '../modules/users/users.module';
+import { GameModule } from '../modules/game/game.module';
+import { GatewayModule } from '../modules/gateway/gateway.module';
 
 @Module({
   imports: [
@@ -25,8 +27,8 @@ import { UsersModule } from '../modules/users/users.module';
     // ── FEATURE MODULES ───────────────────────────────
     AuthModule,
     UsersModule,
-    // GameModule,
-    // GatewayModule,
+    GameModule,
+    GatewayModule,
     // LeaderboardModule,
   ],
   controllers: [AppController],

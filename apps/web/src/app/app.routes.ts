@@ -23,17 +23,29 @@ export const appRoutes: Routes = [
     loadComponent: () =>
       import('./pages/profile/profile/profile.component').then(m => m.ProfileComponent),
   },
-//   {
-//     path: 'lobby',
-//     canActivate: [authGuard],
-//     loadComponent: () =>
-//       import('./pages/lobby/lobby/lobby.component').then(m => m.LobbyComponent),
-//   },
-//   {
-//     path: 'leaderboard',
-//     loadComponent: () =>
-//       import('./pages/leaderboard/leaderboard/leaderboard.component').then(m => m.LeaderboardComponent),
-//   },
+  {
+    path: 'lobby',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/lobby/lobby/lobby.component').then(m => m.LobbyComponent),
+  },
+  {
+    path: 'leaderboard',
+    loadComponent: () =>
+      import('./pages/leaderboard/leaderboard/leaderboard.component').then(m => m.LeaderboardComponent),
+  },
+  {
+    path: 'game/:roomId',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/game/game/game.component').then(m => m.GameComponent),
+  },
+  {
+    path: 'game-result/:roomId',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/game-result/game-result/gameResult.component').then(m => m.GameResultComponent),
+  },
   {
     path: '**',
     redirectTo: '/home',

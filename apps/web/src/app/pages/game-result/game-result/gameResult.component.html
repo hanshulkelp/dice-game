@@ -1,0 +1,82 @@
+<div class="gr-page">
+  <div class="gr-card">
+
+    <!-- ── Trophy ── -->
+    <div [class]="trophyClass()">
+      @if (myRank() !== 4) {
+        <span class="crown">👑</span>
+      }
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 8H50V28C50 38.493 41.941 47 32 47C22.059 47 14 38.493 14 28V8Z"
+              stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M14 12H7C7 12 5 26 14 26" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <path d="M50 12H57C57 12 59 26 50 26" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <path d="M32 47V56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <path d="M20 62H44" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <path d="M24 56H40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <!-- ── Title & subtitle ── -->
+    <h1 [class]="titleClass()">{{ title() }}</h1>
+    <p class="gr-subtitle">{{ subtitle() }}</p>
+
+    <!-- ── Stat pills ── -->
+    <div class="stats-row">
+      <span class="stat-pill">
+        <span>🎲</span> Rolled {{ stats.rolls }} times
+      </span>
+      <span class="stat-pill">
+        <span>📍</span> Final Position: {{ positionLabel() }}
+      </span>
+      <span class="stat-pill">
+        <span>⏱</span> {{ stats.time }}
+      </span>
+    </div>
+
+    <!-- ── Final Rankings ── -->
+    <div class="rankings-card">
+      <p class="rankings-label">FINAL RANKINGS</p>
+
+      @for (player of markedPlayers; track player.rank) {
+        <div class="player-row" [class.you-row]="player.isYou" [class.loser-row]="player.rank === 4">
+          <span [class]="rankClass(player.rank)">{{ player.rank }}</span>
+
+          <div class="avatar-wrap">
+            <img [src]="player.avatar" [alt]="player.username" class="player-avatar"
+                 [class.avatar-muted]="player.rank === 4" />
+            @if (player.isYou) {
+              <span class="online-dot"></span>
+            }
+          </div>
+
+          <span class="player-name" [class.name-muted]="player.rank === 4">
+            {{ player.username }}
+            @if (player.isYou) {
+              <span class="you-tag">(You)</span>
+            }
+          </span>
+
+          <span class="result-badge" [class]="badgeClass(player.rank)">
+            {{ badgeLabel(player.rank) }}
+          </span>
+        </div>
+      }
+    </div>
+
+    <!-- ── Action buttons ── -->
+    <div class="actions">
+      <button class="btn-primary" routerLink="/lobby">PLAY AGAIN</button>
+      <button class="btn-outline" routerLink="/leaderboard">VIEW LEADERBOARD</button>
+    </div>
+
+    <!-- ── Dev rank switcher (remove in production) ── -->
+    <div class="dev-switcher">
+      <span>Preview as:</span>
+      @for (r of [1,2,3,4]; track r) {
+        <button (click)="setRankFromN(r)" [class.active]="myRank() === r">{{ r }}</button>
+      }
+    </div>
+
+  </div>
+</div>

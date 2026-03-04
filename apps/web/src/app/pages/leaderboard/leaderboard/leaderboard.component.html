@@ -1,0 +1,131 @@
+<div class="lb-page">
+
+  <!-- ══════════════ HERO HEADER ══════════════ -->
+  <header class="lb-header">
+    <div class="trophy-icon">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 2H18V8C18 11.3137 15.3137 14 12 14C8.68629 14 6 11.3137 6 8V2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M6 4H3C3 4 2 9 6 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M18 4H21C21 4 22 9 18 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M12 14V18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M8 22H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M9 18H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1 class="lb-title">LEADERBOARD</h1>
+    <p class="lb-subtitle">
+      The realm's elite rollers. Only the boldest dice masters<br>
+      claim their place in the halls of victory.
+    </p>
+  </header>
+
+  <!-- ══════════════ TOP 3 PODIUM ══════════════ -->
+  <section class="podium-section">
+    <div class="podium-wrapper">
+      @for (player of topThree; track player.rank) {
+        <div class="podium-card" [class]="'rank-' + player.rank">
+          <div class="avatar-wrap" [class]="'avatar-' + player.rank">
+            <img [src]="player.avatar" [alt]="player.username" />
+            <span class="rank-badge">{{ player.rank }}</span>
+          </div>
+
+          @if (player.rank === 1) {
+            <div class="first-card">
+              <span class="rank-divider"></span>
+              <p class="first-name">{{ player.username }}</p>
+              <p class="first-tag">&#64; {{ player.title.toUpperCase() }}</p>
+              <div class="first-stats">
+                <div class="stat-block">
+                  <span class="stat-value gold">{{ player.wins | number }}</span>
+                  <span class="stat-label">WINS</span>
+                </div>
+                <div class="stat-block">
+                  <span class="stat-value">{{ player.games | number }}</span>
+                  <span class="stat-label">GAMES</span>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="side-card">
+              <p class="side-name">{{ player.username }}</p>
+              <p class="side-title">{{ player.title }}</p>
+              <div class="side-stats">
+                <div class="stat-small">
+                  <span class="stat-val-s gold">{{ player.wins | number }}</span>
+                  <span class="stat-lbl-s">WINS</span>
+                </div>
+                <div class="stat-small">
+                  <span class="stat-val-s">{{ player.games | number }}</span>
+                  <span class="stat-lbl-s">GAMES</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ══════════════ FULL RANKINGS ══════════════ -->
+  <section class="rankings-section">
+    <div class="rankings-header">
+      <h2 class="rankings-title">
+        <span class="title-bar"></span>
+        Full Rankings
+      </h2>
+      <span class="update-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        Updated every 5 minutes
+      </span>
+    </div>
+
+    <div class="rankings-table">
+      <!-- Table head -->
+      <div class="table-head">
+        <span class="col-rank">RANK</span>
+        <span class="col-player">PLAYER</span>
+        <span class="col-wins">TOTAL WINS</span>
+        <span class="col-games">GAMES PLAYED</span>
+        <span class="col-rate">WIN RATE</span>
+      </div>
+
+      <!-- Table body -->
+      @for (player of fullRankings; track player.rank; let odd = $odd) {
+        <div class="table-row" [class.row-odd]="odd">
+          <span class="col-rank rank-num">{{ player.rank }}</span>
+
+          <div class="col-player player-info">
+            <img [src]="player.avatar" [alt]="player.username" class="row-avatar" />
+            <div class="player-text">
+              <span class="player-name">{{ player.username }}</span>
+              <span class="player-tier">{{ player.tier | uppercase }}</span>
+            </div>
+          </div>
+
+          <span class="col-wins stat-wins">{{ player.wins | number }}</span>
+          <span class="col-games stat-games">{{ player.games | number }}</span>
+
+          <div class="col-rate rate-cell">
+            <div class="rate-bar-track">
+              <div class="rate-bar-fill" [style.width.%]="player.winRate"></div>
+            </div>
+            <span class="rate-pct">{{ player.winRate }}%</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="view-more-wrap">
+      <button class="view-more-btn" (click)="showMore = !showMore">
+        {{ showMore ? 'Show Less' : 'View More Rankings' }}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+</div>

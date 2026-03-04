@@ -65,3 +65,72 @@ export interface RefreshResponse {
  * Identical to UserProfile — aliased for clarity at the HTTP boundary.
  */
 export type UpdateProfileResponse = UserProfile;
+
+// ── Game module ───────────────────────────────────────────────────────────────
+
+export enum GameStatus {
+  Waiting    = 'waiting',
+  InProgress = 'in_progress',
+  Finished   = 'finished',
+}
+
+/** One player slot inside a room. */
+export interface RoomPlayer {
+  userId:       string;
+  gameUsername: string;
+  avatarUrl:    string | null;
+  position:     number;
+  rank:         number | null;
+  joinedAt:     string; // ISO date string
+}
+
+/** Full room state returned by GET /api/game/:roomId. */
+export interface RoomState {
+  gameId:    string;
+  roomId:    string;
+  status:    GameStatus;
+  players:   RoomPlayer[];
+  winnerId:  string | null;
+  createdAt: string;
+}
+
+/** Response body for POST /api/game/create and POST /api/game/join. */
+export interface JoinCreateGameResponse {
+  roomId: string;
+  gameId: string;
+}
+
+// ── WebSocket event payloads ─────────────────────────────────────────────────
+
+/** Client → Server: request to join a room channel. */
+export interface JoinRoomPayload {
+  roomId: string;
+}
+
+/** Client → Server: request to leave a room channel. */
+export interface LeaveRoomPayload {
+  roomId: string;
+}
+
+/** Server → Client: full room state broadcast. */
+export interface RoomUpdateEvent {
+  room: RoomState;
+}
+
+/** Server → Client: a new player just joined the room. */
+export interface PlayerJoinedEvent {
+  roomId: string;
+  player: RoomPlayer;
+}
+
+/** Server → Client: a player left the room. */
+export interface PlayerLeftEvent {
+  roomId:  string;
+  userId:  string;
+}
+
+/** Server → Client: generic error message. */
+export interface WsErrorEvent {
+  message: string;
+  code?:   string;
+}
