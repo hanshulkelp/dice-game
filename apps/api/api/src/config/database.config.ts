@@ -10,7 +10,7 @@ export const databaseConfig: TypeOrmModuleAsyncOptions = {
     type: 'postgres' as const,
     url: config.get<string>('DATABASE_URL'),
     entities: [User],
-    migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+    migrations: [],
     synchronize: true,
     logging: true,
   }),

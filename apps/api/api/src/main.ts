@@ -12,6 +12,21 @@ import { AppModule } from './app/app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Enable CORS for the Angular dev server
+  app.enableCors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, Postman) or any localhost port
+      if (!origin || /^http:\/\/localhost(:\d+)?$/.test(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
+
   // Strip unknown fields & validate all incoming DTOs
   app.useGlobalPipes(
     new ValidationPipe({

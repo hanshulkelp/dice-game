@@ -1,1 +1,47 @@
-<p>home works!</p>
+<section class="hero">
+  <!-- Left Column -->
+  <div class="hero-left">
+    <h1 class="hero-title">
+      <span class="white">Roll.</span>&nbsp;<span class="gold">Move.</span><br>
+      <span class="white">Conquer.</span>
+    </h1>
+
+    <p class="hero-desc">
+      Challenge up to 4 players in this real-time multiplayer dice
+      board game. Navigate the board, knock out opponents,
+      and race your tokens home in a battle of strategy and
+      luck.
+    </p>
+
+    <div class="hero-actions">
+      <a routerLink="/lobby" class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:6px">
+          <polygon points="2,1 13,7 2,13" fill="#1a1230"/>
+        </svg>
+        Start Playing
+      </a>
+    </div>
+  </div>
+
+  <!-- Right Column -->
+  <div class="hero-right">
+    <div class="game-preview">
+      <!-- Board visual -->
+      <div class="board-visual">
+        <div class="board">
+          <div class="board-grid">
+            <div *ngFor="let cell of cells" class="board-cell" [class.highlight]="cell.highlight"></div>
+          </div>
+          <div class="token token-gold" style="top:48%; left:47%"></div>
+          <div class="token token-silver" style="top:25%; left:60%"></div>
+          <div class="token token-red" style="top:30%; left:38%"></div>
+          <div class="token token-blue" style="top:60%; left:66%"></div>
+          <div class="particle p1"></div>
+          <div class="particle p2"></div>
+          <div class="particle p3"></div>
+          <div class="particle p4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

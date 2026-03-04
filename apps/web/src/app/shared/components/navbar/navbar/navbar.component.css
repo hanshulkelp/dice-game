@@ -1,0 +1,113 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar {
+  width: 100%;
+  padding: 0 60px;
+  background: transparent;
+  position: relative;
+  z-index: 100;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.logo-text {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #e8c547;
+  letter-spacing: 0.5px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Nav Links */
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 40px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #e0dff0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: #ffffff;
+}
+
+/* Auth */
+.btn-login {
+  display: inline-block;
+  padding: 8px 22px;
+  border-radius: 50px;
+  background: #e8c547;
+  color: #1a1230;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-login:hover {
+  background: #f0d060;
+  transform: translateY(-1px);
+}
+
+/* Avatar / profile button */
+.avatar-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.avatar-btn:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.avatar-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #e8c547;
+}
+
+.avatar-name {
+  color: #e8c547;
+  font-weight: 600;
+  font-size: 0.9rem;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

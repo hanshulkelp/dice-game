@@ -1,0 +1,500 @@
+/* ── Page wrapper ─────────────────────────────────────────────────────────── */
+.profile-page {
+  min-height: 100vh;
+  background: #0e0c1a;
+  color: #e0dff0;
+  padding: 32px 48px 60px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* ── Profile Header ───────────────────────────────────────────────────────── */
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1a1730;
+  border: 1px solid #2e2a4a;
+  border-radius: 16px;
+  padding: 28px 36px;
+  margin-bottom: 28px;
+  gap: 24px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Avatar */
+.avatar-wrap {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+}
+
+.avatar-img,
+.avatar-fallback {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e8c547;
+}
+
+.avatar-fallback svg {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+}
+
+.camera-btn {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background: #2e2a4a;
+  border: 2px solid #e8c547;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Header info */
+.username-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.username-row h1 {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.verified {
+  background: #3a7bd5;
+  color: #fff;
+  font-size: 0.65rem;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.email {
+  color: #9893b8;
+  font-size: 0.85rem;
+  margin: 0 0 12px;
+}
+
+.stats-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  background: #2a2445;
+  border: 1px solid #3a3460;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  color: #9893b8;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pill strong {
+  color: #ffffff;
+  margin-left: 4px;
+}
+
+.pill.win-rate strong {
+  color: #e8c547;
+}
+
+/* Header actions */
+.header-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.btn-edit,
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  border: none;
+}
+
+.btn-edit {
+  background: #e8c547;
+  color: #1a1230;
+}
+
+.btn-logout {
+  background: transparent;
+  color: #e05a5a;
+  border: 1.5px solid #e05a5a;
+}
+
+.btn-edit:hover,
+.btn-logout:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+/* ── Divider line ─────────────────────────────────────────────────────────── */
+.profile-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+/* ── Section titles ───────────────────────────────────────────────────────── */
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e0dff0;
+  margin: 0 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  font-size: 1rem;
+}
+
+/* ── Stats section ────────────────────────────────────────────────────────── */
+.stats-section {
+  background: #1a1730;
+  border: 1px solid #2e2a4a;
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: #0e0c1a;
+  border: 1px solid #2e2a4a;
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+.stat-label {
+  color: #7a75a0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px;
+}
+
+.stat-value {
+  color: #ffffff;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Recent games */
+.recent-label {
+  color: #7a75a0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px;
+}
+
+.game-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid #2a2445;
+}
+
+.game-row:last-child {
+  border-bottom: none;
+}
+
+.result-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  min-width: 40px;
+  text-align: center;
+}
+
+.result-badge.win {
+  background: rgba(72, 199, 142, 0.2);
+  color: #48c78e;
+  border: 1px solid #48c78e;
+}
+
+.result-badge.loss {
+  background: rgba(224, 90, 90, 0.2);
+  color: #e05a5a;
+  border: 1px solid #e05a5a;
+}
+
+.game-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.game-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e0dff0;
+}
+
+.game-time {
+  font-size: 0.75rem;
+  color: #7a75a0;
+}
+
+.game-rank {
+  font-size: 0.8rem;
+  color: #9893b8;
+}
+
+.game-rank strong {
+  color: #e8c547;
+}
+
+/* ── Settings section ─────────────────────────────────────────────────────── */
+.settings-section {
+  background: #1a1730;
+  border: 1px solid #2e2a4a;
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Accordion */
+.accordion-item {
+  border-bottom: 1px solid #2a2445;
+}
+
+.accordion-item:last-child {
+  border-bottom: none;
+}
+
+.accordion-header {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+  text-align: left;
+  color: #e0dff0;
+  transition: opacity 0.2s;
+}
+
+.accordion-header:hover {
+  opacity: 0.8;
+}
+
+.acc-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.acc-icon {
+  font-size: 1.1rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2a2445;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.acc-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #e0dff0;
+  margin: 0;
+}
+
+.acc-sub {
+  font-size: 0.78rem;
+  color: #7a75a0;
+  margin: 2px 0 0;
+}
+
+.chevron {
+  color: #7a75a0;
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+/* Accordion body */
+.accordion-body {
+  padding: 4px 0 20px;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #7a75a0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 12px 0 6px;
+}
+
+.input-wrap {
+  position: relative;
+}
+
+.field-input {
+  width: 100%;
+  background: #0e0c1a;
+  border: 1.5px solid #2e2a4a;
+  border-radius: 8px;
+  padding: 10px 40px 10px 14px;
+  color: #e0dff0;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.field-input:focus {
+  border-color: #e8c547;
+}
+
+.field-input::placeholder {
+  color: #4a4570;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #7a75a0;
+  padding: 0;
+}
+
+.pw-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.pw-half {
+  display: flex;
+  flex-direction: column;
+}
+
+.pw-half .field-label { margin-top: 8px; }
+
+.strength {
+  font-size: 0.75rem;
+  margin: 4px 0 0;
+}
+.strength.weak   { color: #e05a5a; }
+.strength.fair   { color: #e8c547; }
+.strength.strong { color: #48c78e; }
+
+.field-error {
+  color: #e05a5a;
+  font-size: 0.78rem;
+  margin: 4px 0 0;
+}
+
+.field-success {
+  color: #48c78e;
+  font-size: 0.78rem;
+  margin: 4px 0 0;
+}
+
+.btn-save,
+.btn-update-pw {
+  width: 100%;
+  padding: 11px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 14px;
+  transition: opacity 0.2s;
+}
+
+.btn-save {
+  background: #e8c547;
+  color: #1a1230;
+}
+
+.btn-update-pw {
+  background: #3a6e4e;
+  color: #ffffff;
+}
+
+.btn-save:hover,
+.btn-update-pw:hover {
+  opacity: 0.88;
+}
+
+.btn-save:disabled,
+.btn-update-pw:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+.profile-footer {
+  text-align: center;
+  color: #4a4570;
+  font-size: 0.8rem;
+  margin-top: 40px;
+}
